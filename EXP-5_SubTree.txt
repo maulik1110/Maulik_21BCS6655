@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int from, to, weight;
+} Edge;
+
+typedef struct {
+    int *parent, *rank;
+    int size;
+} DisjointSet;
+
+DisjointSet* createDisjointSet(int n) {
+    DisjointSet* ds = (DisjointSet*)malloc(sizeof(DisjointSet));
+    ds->parent = (int*)malloc((n + 1) * sizeof(int));
+    ds->rank = (int*)malloc((n + 1) * sizeof(int));
+    ds->size = n;
+    for (int i = 0; i <= n; i++) {
+        ds->parent[i] = i;
+        ds->rank[i] = 0;
+    }
+    return ds;
+}
+
+int find(DisjointSet* ds, int u) {
+    if (ds->parent[u] != u) {
+        ds->parent[u] = find(ds, ds->parent[u]);
+    }
+    return ds->parent[u];
+}
+
+void unionSets(DisjointSet* ds, int u, int v) {
+    int rootU = find(ds, u);
+    int rootV = find(ds, v);
+    if (ds->rank[rootU] < ds->rank[rootV]) {
+        ds->parent[rootU] = rootV;
+    } else if (ds->rank[rootU] > ds->rank[rootV]) {
+        ds->parent[rootV] = rootU;
+    } else {
+        ds->parent[rootU] = rootV;
+        ds->rank[rootV]++;
+    }
+}
+
+int compareEdges(const void* a, const void* b) {
+    Edge* edgeA = (Edge*)a;
+    Edge* edgeB = (Edge*)b;
+    return edgeA->weight - edgeB->weight;
+}
+
+int kruskals(int g_nodes, int* g_from, int* g_to, int* g_weight, int g_edges) {
+    Edge* edges = (Edge*)malloc(g_edges * sizeof(Edge));
+    for (int i = 0; i < g_edges; i++) {
+        edges[i].from = g_from[i];
+        edges[i].to = g_to[i];
+        edges[i].weight = g_weight[i];
+    }
+
+    qsort(edges, g_edges, sizeof(Edge), compareEdges);
+
+    DisjointSet* ds = createDisjointSet(g_nodes);
+    int totalWeight = 0;
+
+    for (int i = 0; i < g_edges; i++) {
+        int rootFrom = find(ds, edges[i].from);
+        int rootTo = find(ds, edges[i].to);
+        if (rootFrom != rootTo) {
+            unionSets(ds, rootFrom, rootTo);
+            totalWeight += edges[i].weight;
+        }
+    }
+
+    free(edges);
+    free(ds->parent);
+    free(ds->rank);
+    free(ds);
+
+    return totalWeight;
+}
+
+int main() {
+    int g_nodes, g_edges;
+    printf("Enter the number of nodes and edges: ");
+    scanf("%d %d", &g_nodes, &g_edges);
+
+    int* g_from = (int*)malloc(g_edges * sizeof(int));
+    int* g_to = (int*)malloc(g_edges * sizeof(int));
+    int* g_weight = (int*)malloc(g_edges * sizeof(int));
+
+    printf("Enter the edges (from to weight):\n");
+    for (int i = 0; i < g_edges; i++) {
+        scanf("%d %d %d", &g_from[i], &g_to[i], &g_weight[i]);
+    }
+
+    int result = kruskals(g_nodes, g_from, g_to, g_weight, g_edges);
+    printf("Total weight of the minimum spanning tree: %d\n", result);
+
+    free(g_from);
+    free(g_to);
+    free(g_weight);
+
+    return 0;
+}
+

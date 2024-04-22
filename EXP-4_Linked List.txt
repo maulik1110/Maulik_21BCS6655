@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+struct Node* insert_at_head(struct Node* head, int data) {
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->data = data;
+    new_node->next = head;
+    return new_node;
+}
+
+struct Node* create_linked_list(int arr[], int n) {
+    struct Node* head = NULL;
+    for (int i = n - 1; i >= 0; i--) {
+        head = insert_at_head(head, arr[i]);
+    }
+    return head;
+}
+
+void print_linked_list(struct Node* head) {
+    while (head) {
+        printf("%d ", head->data);
+        head = head->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    int n, i, arr[10];
+    printf("Enter size of linked list : ");
+    scanf("%d", &n);
+    printf("Enter elements : \n");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+    struct Node* head = create_linked_list(arr, n);
+    printf("Initial linked list: ");
+    print_linked_list(head);
+    int data;
+    char choice;
+    printf("Enter new element to add: ");
+    scanf("%d", &data);
+    head = insert_at_head(head, data);
+    printf("Updated linked list after adding %d: ", data);
+    print_linked_list(head);
+    return 0;
+}
